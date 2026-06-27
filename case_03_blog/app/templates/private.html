@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="posts wide">
+  <h1>Посты только по запросу</h1>
+  {% for post in posts %}
+    <article class="post">
+      <h2>{{ post.title }}</h2>
+      <p>Автор: {{ post.author.username }}</p>
+      <div class="tags">
+        {% for tag in post.tags %}
+          <span class="tag">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      {% set sent = sent_by_post.get(post.id) %}
+      {% if sent %}
+        <p class="muted">Запрос отправлен, статус: {{ sent.status }}</p>
+      {% else %}
+        <form method="post" action="/posts/{{ post.id }}/request-access">
+          <button type="submit">Запросить доступ</button>
+        </form>
+      {% endif %}
+    </article>
+  {% else %}
+    <article class="post empty">Нет скрытых постов, доступ к которым можно запросить.</article>
+  {% endfor %}
+
+  <h1>Запросы к моим постам</h1>
+  {% for item in my_requests %}
+    <article class="post">
+      <h2>{{ item.post.title }}</h2>
+      <p>Пользователь {{ item.requester.username }} просит доступ.</p>
+      <form method="post" action="/access-requests/{{ item.id }}/approve">
+        <button type="submit">Разрешить доступ</button>
+      </form>
+    </article>
+  {% else %}
+    <article class="post empty">Новых запросов нет.</article>
+  {% endfor %}
+</section>
+{% endblock %}

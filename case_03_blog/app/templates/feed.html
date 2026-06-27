@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="posts wide">
+  <h1>Лента по подпискам</h1>
+  {% for post in posts %}
+    <article class="post">
+      <h2>{{ post.title }}</h2>
+      <p>Автор: {{ post.author.username }}</p>
+      <p class="body">{{ post.body }}</p>
+      <div class="tags">
+        {% for tag in post.tags %}
+          <span class="tag">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+    </article>
+  {% else %}
+    <article class="post empty">В ленте пока нет постов. Подпишитесь на авторов на главной странице.</article>
+  {% endfor %}
+</section>
+{% endblock %}
+

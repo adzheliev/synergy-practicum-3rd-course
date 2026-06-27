@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  {% if current_user %}
+    <h1>Новый пост</h1>
+    <form class="stack" method="post" action="/posts">
+      <input name="title" placeholder="Заголовок" required maxlength="160">
+      <textarea name="body" placeholder="Текст поста" required rows="6"></textarea>
+      <input name="tags" placeholder="Теги через запятую: fastapi, web, practice">
+      <label class="check">
+        <input type="checkbox" name="is_public" value="true" checked>
+        Публичный пост
+      </label>
+      <button type="submit">Опубликовать</button>
+    </form>
+  {% else %}
+    <h1>Вход</h1>
+    <div class="auth-grid">
+      <form class="stack" method="post" action="/login">
+        <input name="username" placeholder="Логин" required>
+        <input name="password" type="password" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+      </form>
+      <form class="stack" method="post" action="/register">
+        <input name="username" placeholder="Новый логин" required>
+        <input name="password" type="password" placeholder="Пароль от 6 символов" required>
+        <button type="submit">Зарегистрироваться</button>
+      </form>
+    </div>
+  {% endif %}
+</section>
+
+<aside class="panel">
+  <h2>Теги</h2>
+  <div class="tags">
+    <a class="tag" href="/">Все</a>
+    {% for tag in tags %}
+      <a class="tag {% if active_tag == tag.name %}active{% endif %}" href="/?tag={{ tag.name }}">{{ tag.name }}</a>
+    {% endfor %}
+  </div>
+  {% if current_user %}
+    <h2>Авторы</h2>
+    <div class="authors">
+      {% for user in users if user.id != current_user.id %}
+        <form method="post" action="/users/{{ user.id }}/subscribe">
+          <span>{{ user.username }}</span>
+          <button type="submit">Подписаться</button>
+        </form>
+      {% endfor %}
+    </div>
+  {% endif %}
+</aside>
+
+<section class="posts">
+  {% for post in posts %}
+    <article class="post">
+      <div class="post-head">
+        <div>
+          <h2>{{ post.title }}</h2>
+          <p>Автор: {{ post.author.username }} · {% if post.is_public %}публичный{% else %}только по запросу{% endif %}</p>
+        </div>
+        {% if current_user and current_user.id == post.author_id %}
+          <form method="post" action="/posts/{{ post.id }}/delete">
+            <button class="danger" type="submit">Удалить</button>
+          </form>
+        {% endif %}
+      </div>
+      <p class="body">{{ post.body }}</p>
+      <div class="tags">
+        {% for tag in post.tags %}
+          <a class="tag" href="/?tag={{ tag.name }}">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+      {% if current_user and current_user.id == post.author_id %}
+        <details>
+          <summary>Редактировать</summary>
+          <form class="stack" method="post" action="/posts/{{ post.id }}/edit">
+            <input name="title" value="{{ post.title }}" required maxlength="160">
+            <textarea name="body" rows="4" required>{{ post.body }}</textarea>
+            <input name="tags" value="{% for tag in post.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
+            <label class="check">
+              <input type="checkbox" name="is_public" value="true" {% if post.is_public %}checked{% endif %}>
+              Публичный пост
+            </label>
+            <button type="submit">Сохранить</button>
+          </form>
+        </details>
+      {% endif %}
+      <section class="comments">
+        <h3>Комментарии</h3>
+        {% for comment in post.comments %}
+          <p><strong>{{ comment.author.username }}:</strong> {{ comment.body }}</p>
+        {% endfor %}
+        {% if current_user %}
+          <form method="post" action="/posts/{{ post.id }}/comments" class="comment-form">
+            <input name="body" placeholder="Добавить комментарий" required>
+            <button type="submit">Отправить</button>
+          </form>
+        {% endif %}
+      </section>
+    </article>
+  {% else %}
+    <article class="post empty">Пока нет постов.</article>
+  {% endfor %}
+</section>
+{% endblock %}
+
