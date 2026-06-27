@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: synergy_bookstore_db
+    environment:
+      POSTGRES_DB: bookstore_db
+      POSTGRES_USER: bookstore_user
+      POSTGRES_PASSWORD: bookstore_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - bookstore_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  bookstore_postgres_data:
+
