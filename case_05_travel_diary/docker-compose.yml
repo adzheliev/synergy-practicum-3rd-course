@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: synergy_travel_diary_db
+    environment:
+      POSTGRES_DB: travel_diary_db
+      POSTGRES_USER: travel_user
+      POSTGRES_PASSWORD: travel_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - travel_diary_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  travel_diary_postgres_data:
+
