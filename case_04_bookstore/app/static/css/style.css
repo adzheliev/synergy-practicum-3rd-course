@@ -65,7 +65,7 @@ p {
 
 .account {
   align-items: center;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   margin-top: 24px;
 }
 

@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
 
 from .database import Base, engine, get_db
 from .models import Book, Category, Purchase, Rental, User
@@ -78,6 +79,58 @@ def logout():
     return redirect
 
 
+@app.get("/my-library", response_class=HTMLResponse)
+def my_library(db: Session = Depends(get_db), user: User = Depends(require_user)) -> str:
+    purchases = db.scalars(
+        select(Purchase)
+        .where(Purchase.user_id == user.id)
+        .options(selectinload(Purchase.book))
+        .order_by(Purchase.created_at.desc())
+    ).all()
+    rentals = db.scalars(
+        select(Rental)
+        .where(Rental.user_id == user.id)
+        .options(selectinload(Rental.book))
+        .order_by(Rental.end_date.asc())
+    ).all()
+    purchase_rows = "".join(
+        f"<li>{item.book.title} — куплено за {item.price} ₽</li>"
+        for item in purchases
+    ) or "<li>Покупок пока нет.</li>"
+    rental_rows = "".join(
+        f"<li>{item.book.title} — аренда до {item.end_date}, статус: {item.status}</li>"
+        for item in rentals
+    ) or "<li>Аренд пока нет.</li>"
+    return f"""
+    <!doctype html>
+    <html lang="ru">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Моя библиотека</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+      </head>
+      <body>
+        <main class="page">
+          <section class="hero">
+            <p class="eyebrow">Моя библиотека</p>
+            <h1>{user.username}</h1>
+            <p><a href="/">Вернуться в каталог</a></p>
+          </section>
+          <section class="book-card">
+            <h2>Покупки</h2>
+            <ul>{purchase_rows}</ul>
+          </section>
+          <section class="book-card">
+            <h2>Аренда</h2>
+            <ul>{rental_rows}</ul>
+          </section>
+        </main>
+      </body>
+    </html>
+    """
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(
     category: str | None = None,
@@ -123,6 +176,7 @@ def index(
         f"""
         <form method="post" action="/logout" class="account">
           <span>{user.username} · {user.role}</span>
+          <a href="/my-library">Моя библиотека</a>
           <button type="submit">Выйти</button>
         </form>
         """
