@@ -69,6 +69,37 @@ def logout():
     return redirect
 
 
+@app.get("/my-trips", response_class=HTMLResponse)
+def my_trips(db: Session = Depends(get_db), user: User = Depends(require_user)) -> str:
+    trips = db.scalars(
+        select(Trip).where(Trip.author_id == user.id).order_by(Trip.created_at.desc())
+    ).all()
+    trip_cards = "".join(render_trip_card(trip) for trip in trips) or '<article class="trip-card empty">Вы пока не добавили путешествий.</article>'
+    return f"""
+    <!doctype html>
+    <html lang="ru">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Мои путешествия</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+      </head>
+      <body>
+        <main class="page">
+          <section class="hero">
+            <p class="eyebrow">Мои путешествия</p>
+            <h1>{user.username}</h1>
+            <p><a href="/">Вернуться к публичным путешествиям</a></p>
+          </section>
+          <section class="trip-grid">
+            {trip_cards}
+          </section>
+        </main>
+      </body>
+    </html>
+    """
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(db: Session = Depends(get_db), user: User | None = Depends(get_current_user)) -> str:
     trips = db.scalars(
@@ -79,6 +110,7 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
         f"""
         <form method="post" action="/logout" class="account">
           <span>{user.username}</span>
+          <a href="/my-trips">Мои путешествия</a>
           <button type="submit">Выйти</button>
         </form>
         """
