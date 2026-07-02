@@ -3,14 +3,31 @@ services:
     image: postgres:16-alpine
     container_name: synergy_bookstore_db
     environment:
-      POSTGRES_DB: bookstore_db
-      POSTGRES_USER: bookstore_user
-      POSTGRES_PASSWORD: bookstore_password
+      POSTGRES_DB: ${POSTGRES_DB:-bookstore_db}
+      POSTGRES_USER: ${POSTGRES_USER:-bookstore_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookstore_password}
     ports:
       - "5434:5432"
     volumes:
       - bookstore_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookstore_user -d bookstore_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    container_name: synergy_bookstore_web
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://bookstore_user:bookstore_password@db:5432/bookstore_db}
+    ports:
+      - "8004:8000"
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   bookstore_postgres_data:
-
