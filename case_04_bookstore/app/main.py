@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -5,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
-from .models import Book, Category, User
+from .models import Book, Category, Purchase, Rental, User
 from .security import hash_password, read_signed_user_id, sign_user_id, verify_password
 
 
@@ -112,6 +114,7 @@ def index(
             <strong>{book.price} ₽</strong>
             <span>{book.status}</span>
           </div>
+          {book_actions(book, user)}
         </article>
         """
         for book in books
@@ -184,3 +187,63 @@ def index(
         year_active="active" if sort == "year" else "",
         book_cards=book_cards,
     )
+
+
+def book_actions(book: Book, user: User | None) -> str:
+    if user is None:
+        return '<p class="hint">Войдите, чтобы купить или арендовать книгу.</p>'
+    if book.status != "available":
+        return '<p class="hint">Книга сейчас недоступна.</p>'
+    return f"""
+    <div class="actions">
+      <form method="post" action="/books/{book.id}/purchase">
+        <button type="submit">Купить</button>
+      </form>
+      <form method="post" action="/books/{book.id}/rent">
+        <select name="period_days">
+          <option value="14">2 недели</option>
+          <option value="30">1 месяц</option>
+          <option value="90">3 месяца</option>
+        </select>
+        <button type="submit">Арендовать</button>
+      </form>
+    </div>
+    """
+
+
+@app.post("/books/{book_id}/purchase")
+def purchase_book(book_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    book = db.get(Book, book_id)
+    if book is None or book.status != "available":
+        raise HTTPException(status_code=404, detail="Available book not found")
+    db.add(Purchase(user_id=user.id, book_id=book.id, price=book.price))
+    book.status = "sold"
+    db.commit()
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/books/{book_id}/rent")
+def rent_book(
+    book_id: int,
+    period_days: int = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+):
+    if period_days not in {14, 30, 90}:
+        raise HTTPException(status_code=400, detail="Invalid rental period")
+    book = db.get(Book, book_id)
+    if book is None or book.status != "available":
+        raise HTTPException(status_code=404, detail="Available book not found")
+    today = date.today()
+    db.add(
+        Rental(
+            user_id=user.id,
+            book_id=book.id,
+            start_date=today,
+            end_date=today + timedelta(days=period_days),
+            status="active",
+        )
+    )
+    book.status = "rented"
+    db.commit()
+    return RedirectResponse("/", status_code=303)

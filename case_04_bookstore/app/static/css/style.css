@@ -77,6 +77,13 @@ input {
   width: 100%;
 }
 
+select {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  padding: 10px 12px;
+}
+
 button {
   background: var(--accent);
   border: 0;
@@ -85,6 +92,23 @@ button {
   cursor: pointer;
   font: inherit;
   padding: 10px 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions form {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .toolbar {
