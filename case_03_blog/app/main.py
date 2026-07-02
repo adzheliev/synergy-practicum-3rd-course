@@ -261,6 +261,18 @@ def add_comment(
     return RedirectResponse("/", status_code=303)
 
 
+@app.post("/comments/{comment_id}/delete")
+def delete_comment(comment_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    comment = db.scalar(select(Comment).where(Comment.id == comment_id).options(selectinload(Comment.post)))
+    if comment is None:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.author_id != user.id and comment.post.author_id != user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    db.delete(comment)
+    db.commit()
+    return RedirectResponse("/", status_code=303)
+
+
 @app.post("/users/{author_id}/subscribe")
 def subscribe(author_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
     if author_id == user.id or db.get(User, author_id) is None:

@@ -70,6 +70,10 @@ button.danger {
   background: var(--danger);
 }
 
+button.small {
+  padding: 6px 10px;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(260px, 360px) minmax(220px, 280px) 1fr;
@@ -193,6 +197,17 @@ textarea {
   border-top: 1px solid var(--line);
   margin-top: 16px;
   padding-top: 16px;
+}
+
+.comment-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.comment-row p {
+  margin: 6px 0;
 }
 
 .empty {

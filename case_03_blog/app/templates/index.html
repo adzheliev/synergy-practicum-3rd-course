@@ -89,7 +89,14 @@
       <section class="comments">
         <h3>Комментарии</h3>
         {% for comment in post.comments %}
-          <p><strong>{{ comment.author.username }}:</strong> {{ comment.body }}</p>
+          <div class="comment-row">
+            <p><strong>{{ comment.author.username }}:</strong> {{ comment.body }}</p>
+            {% if current_user and (current_user.id == comment.author_id or current_user.id == post.author_id) %}
+              <form method="post" action="/comments/{{ comment.id }}/delete">
+                <button class="danger small" type="submit">Удалить</button>
+              </form>
+            {% endif %}
+          </div>
         {% endfor %}
         {% if current_user %}
           <form method="post" action="/posts/{{ post.id }}/comments" class="comment-form">
