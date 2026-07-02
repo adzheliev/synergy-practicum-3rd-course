@@ -1,0 +1,100 @@
+services:
+  blog_db:
+    image: postgres:16-alpine
+    container_name: synergy_all_blog_db
+    environment:
+      POSTGRES_DB: blog_db
+      POSTGRES_USER: blog_user
+      POSTGRES_PASSWORD: blog_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - blog_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blog_user -d blog_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  blog_web:
+    build:
+      context: ./case_03_blog
+    container_name: synergy_all_blog_web
+    environment:
+      DATABASE_URL: postgresql+psycopg://blog_user:blog_password@blog_db:5432/blog_db
+      SECRET_KEY: change-me-in-production
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./case_03_blog/app:/app/app
+    depends_on:
+      blog_db:
+        condition: service_healthy
+
+  bookstore_db:
+    image: postgres:16-alpine
+    container_name: synergy_all_bookstore_db
+    environment:
+      POSTGRES_DB: bookstore_db
+      POSTGRES_USER: bookstore_user
+      POSTGRES_PASSWORD: bookstore_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - bookstore_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookstore_user -d bookstore_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  bookstore_web:
+    build:
+      context: ./case_04_bookstore
+    container_name: synergy_all_bookstore_web
+    environment:
+      DATABASE_URL: postgresql+psycopg://bookstore_user:bookstore_password@bookstore_db:5432/bookstore_db
+    ports:
+      - "8004:8000"
+    volumes:
+      - ./case_04_bookstore/app:/app/app
+    depends_on:
+      bookstore_db:
+        condition: service_healthy
+
+  travel_diary_db:
+    image: postgres:16-alpine
+    container_name: synergy_all_travel_diary_db
+    environment:
+      POSTGRES_DB: travel_diary_db
+      POSTGRES_USER: travel_user
+      POSTGRES_PASSWORD: travel_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - travel_diary_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travel_user -d travel_diary_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  travel_diary_web:
+    build:
+      context: ./case_05_travel_diary
+    container_name: synergy_all_travel_diary_web
+    environment:
+      DATABASE_URL: postgresql+psycopg://travel_user:travel_password@travel_diary_db:5432/travel_diary_db
+    ports:
+      - "8005:8000"
+    volumes:
+      - ./case_05_travel_diary/app:/app/app
+    depends_on:
+      travel_diary_db:
+        condition: service_healthy
+
+volumes:
+  blog_postgres_data:
+  bookstore_postgres_data:
+  travel_diary_postgres_data:
+
