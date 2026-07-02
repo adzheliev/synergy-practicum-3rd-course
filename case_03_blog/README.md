@@ -39,3 +39,16 @@ http://localhost:8003
 ```text
 http://localhost:8003/docs
 ```
+
+## Демо-данные
+
+После запуска контейнеров можно заполнить базу тестовыми данными:
+
+```bash
+docker compose exec web python -m app.seed
+```
+
+Тестовые пользователи:
+
+- `student` / `student123`
+- `mentor` / `mentor123`
