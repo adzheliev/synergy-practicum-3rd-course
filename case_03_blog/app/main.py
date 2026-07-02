@@ -120,6 +120,21 @@ def feed(
     return templates.TemplateResponse("feed.html", {"request": request, "current_user": user, "posts": posts})
 
 
+@app.get("/my-posts", response_class=HTMLResponse)
+def my_posts(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_user),
+) -> HTMLResponse:
+    posts = db.scalars(
+        select(Post)
+        .where(Post.author_id == user.id)
+        .options(selectinload(Post.author), selectinload(Post.tags), selectinload(Post.comments).selectinload(Comment.author))
+        .order_by(Post.created_at.desc())
+    ).all()
+    return templates.TemplateResponse("my_posts.html", {"request": request, "current_user": user, "posts": posts})
+
+
 @app.get("/private", response_class=HTMLResponse)
 def private_posts(
     request: Request,

@@ -12,6 +12,7 @@
       <nav>
         <a href="/">Публичные посты</a>
         {% if current_user %}
+          <a href="/my-posts">Мои посты</a>
           <a href="/feed">Моя лента</a>
           <a href="/private">Запросы</a>
           <form method="post" action="/logout">

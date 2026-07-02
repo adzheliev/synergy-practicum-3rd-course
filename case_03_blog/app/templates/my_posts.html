@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="posts wide">
+  <h1>Мои посты</h1>
+  {% for post in posts %}
+    <article class="post">
+      <div class="post-head">
+        <div>
+          <h2>{{ post.title }}</h2>
+          <p>{% if post.is_public %}публичный{% else %}только по запросу{% endif %}</p>
+        </div>
+        <form method="post" action="/posts/{{ post.id }}/delete">
+          <button class="danger" type="submit">Удалить</button>
+        </form>
+      </div>
+      <p class="body">{{ post.body }}</p>
+      <div class="tags">
+        {% for tag in post.tags %}
+          <span class="tag">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      <details>
+        <summary>Редактировать</summary>
+        <form class="stack" method="post" action="/posts/{{ post.id }}/edit">
+          <input name="title" value="{{ post.title }}" required maxlength="160">
+          <textarea name="body" rows="4" required>{{ post.body }}</textarea>
+          <input name="tags" value="{% for tag in post.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}">
+          <label class="check">
+            <input type="checkbox" name="is_public" value="true" {% if post.is_public %}checked{% endif %}>
+            Публичный пост
+          </label>
+          <button type="submit">Сохранить</button>
+        </form>
+      </details>
+    </article>
+  {% else %}
+    <article class="post empty">Вы пока не опубликовали ни одного поста.</article>
+  {% endfor %}
+</section>
+{% endblock %}
