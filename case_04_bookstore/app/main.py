@@ -233,6 +233,7 @@ def index(
         """
         <section class="book-card">
           <h2>Добавить книгу</h2>
+          <p><a href="/admin/rental-reminders">Напоминания об аренде</a></p>
           <form method="post" action="/admin/books" class="admin-form">
             <input name="title" placeholder="Название" required>
             <input name="author" placeholder="Автор" required>
@@ -354,6 +355,46 @@ def update_book(
     book.status = status_value
     db.commit()
     return RedirectResponse("/", status_code=303)
+
+
+@app.get("/admin/rental-reminders", response_class=HTMLResponse)
+def rental_reminders(db: Session = Depends(get_db), user: User = Depends(require_admin)) -> str:
+    today = date.today()
+    soon = today + timedelta(days=3)
+    rentals = db.scalars(
+        select(Rental)
+        .where(Rental.status == "active", Rental.end_date <= soon)
+        .options(selectinload(Rental.book), selectinload(Rental.user))
+        .order_by(Rental.end_date.asc())
+    ).all()
+    reminder_rows = "".join(
+        f"<li>{item.user.username}: {item.book.title} — вернуть до {item.end_date}</li>"
+        for item in rentals
+    ) or "<li>Нет аренд, по которым требуется напоминание.</li>"
+    return f"""
+    <!doctype html>
+    <html lang="ru">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Напоминания об аренде</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+      </head>
+      <body>
+        <main class="page">
+          <section class="hero">
+            <p class="eyebrow">Администратор</p>
+            <h1>Напоминания об окончании аренды</h1>
+            <p>Показаны активные аренды, которые заканчиваются до {soon} включительно.</p>
+            <p><a href="/">Вернуться в каталог</a></p>
+          </section>
+          <section class="book-card">
+            <ul>{reminder_rows}</ul>
+          </section>
+        </main>
+      </body>
+    </html>
+    """
 
 
 @app.post("/books/{book_id}/purchase")
