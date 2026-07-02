@@ -77,6 +77,15 @@ input {
   width: 100%;
 }
 
+textarea {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  min-height: 90px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
 select {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -176,13 +185,25 @@ button {
   justify-content: space-between;
 }
 
+.admin-form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-form textarea,
+.admin-form button {
+  grid-column: 1 / -1;
+}
+
 .empty {
   color: var(--muted);
 }
 
 @media (max-width: 720px) {
   .auth-grid,
-  .account {
+  .account,
+  .admin-form {
     grid-template-columns: 1fr;
   }
 }

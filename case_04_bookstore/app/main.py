@@ -131,6 +131,38 @@ def my_library(db: Session = Depends(get_db), user: User = Depends(require_user)
     """
 
 
+@app.post("/admin/books")
+def create_book(
+    title: str = Form(...),
+    author: str = Form(...),
+    year: int = Form(...),
+    category_name: str = Form(...),
+    price: float = Form(...),
+    description: str = Form(""),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+):
+    category_name = category_name.strip()
+    category = db.scalar(select(Category).where(Category.name == category_name))
+    if category is None:
+        category = Category(name=category_name)
+        db.add(category)
+        db.flush()
+    db.add(
+        Book(
+            title=title.strip(),
+            author=author.strip(),
+            year=year,
+            category_id=category.id,
+            price=price,
+            description=description.strip(),
+            status="available",
+        )
+    )
+    db.commit()
+    return RedirectResponse("/", status_code=303)
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(
     category: str | None = None,
@@ -196,6 +228,24 @@ def index(
         </div>
         """
     )
+    admin_panel = (
+        """
+        <section class="book-card">
+          <h2>Добавить книгу</h2>
+          <form method="post" action="/admin/books" class="admin-form">
+            <input name="title" placeholder="Название" required>
+            <input name="author" placeholder="Автор" required>
+            <input name="year" type="number" placeholder="Год" required>
+            <input name="category_name" placeholder="Категория" required>
+            <input name="price" type="number" min="0" step="0.01" placeholder="Цена" required>
+            <textarea name="description" placeholder="Описание"></textarea>
+            <button type="submit">Добавить</button>
+          </form>
+        </section>
+        """
+        if user and user.role == "admin"
+        else ""
+    )
     return """
     <!doctype html>
     <html lang="ru">
@@ -227,6 +277,7 @@ def index(
           <section class="book-grid">
             {book_cards}
           </section>
+          {admin_panel}
         </main>
       </body>
     </html>
@@ -240,6 +291,7 @@ def index(
         author_active="active" if sort == "author" else "",
         year_active="active" if sort == "year" else "",
         book_cards=book_cards,
+        admin_panel=admin_panel,
     )
 
 
