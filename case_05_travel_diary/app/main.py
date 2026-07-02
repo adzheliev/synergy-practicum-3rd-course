@@ -2,9 +2,16 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from .database import Base, engine
+
 
 app = FastAPI(title="Travel Diary")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.on_event("startup")
+def startup() -> None:
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")
@@ -34,4 +41,3 @@ def index() -> str:
       </body>
     </html>
     """
-
