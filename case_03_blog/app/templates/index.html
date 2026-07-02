@@ -35,8 +35,14 @@
   <div class="tags">
     <a class="tag" href="/">Все</a>
     {% for tag in tags %}
-      <a class="tag {% if active_tag == tag.name %}active{% endif %}" href="/?tag={{ tag.name }}">{{ tag.name }}</a>
+      <a class="tag {% if active_tag == tag.name %}active{% endif %}" href="/?tag={{ tag.name }}&sort={{ active_sort }}">{{ tag.name }}</a>
     {% endfor %}
+  </div>
+  <h2>Сортировка</h2>
+  <div class="tags">
+    <a class="tag {% if active_sort == 'newest' %}active{% endif %}" href="/?{% if active_tag %}tag={{ active_tag }}&{% endif %}sort=newest">Новые</a>
+    <a class="tag {% if active_sort == 'oldest' %}active{% endif %}" href="/?{% if active_tag %}tag={{ active_tag }}&{% endif %}sort=oldest">Старые</a>
+    <a class="tag {% if active_sort == 'title' %}active{% endif %}" href="/?{% if active_tag %}tag={{ active_tag }}&{% endif %}sort=title">По названию</a>
   </div>
   {% if current_user %}
     <h2>Авторы</h2>

@@ -63,6 +63,7 @@ def visible_posts_query(user: User | None):
 def index(
     request: Request,
     tag: str | None = None,
+    sort: str = "newest",
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user),
 ) -> HTMLResponse:
@@ -73,7 +74,14 @@ def index(
     )
     if tag:
         query = query.join(Post.tags).where(Tag.name == tag.lower())
-    posts = db.scalars(query.order_by(Post.created_at.desc())).unique().all()
+    if sort == "oldest":
+        query = query.order_by(Post.created_at.asc())
+    elif sort == "title":
+        query = query.order_by(Post.title.asc())
+    else:
+        sort = "newest"
+        query = query.order_by(Post.created_at.desc())
+    posts = db.scalars(query).unique().all()
     tags = db.scalars(select(Tag).order_by(Tag.name)).all()
     users = db.scalars(select(User).order_by(User.username)).all()
     subscribed_author_ids = set()
@@ -90,6 +98,7 @@ def index(
             "tags": tags,
             "users": users,
             "active_tag": tag,
+            "active_sort": sort,
             "subscribed_author_ids": subscribed_author_ids,
         },
     )
