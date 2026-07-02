@@ -16,6 +16,19 @@ docker compose up --build
 http://localhost:8004
 ```
 
+## Демо-данные
+
+После запуска контейнеров можно заполнить базу тестовыми данными:
+
+```bash
+docker compose exec web python -m app.seed
+```
+
+Тестовые пользователи:
+
+- `admin` / `admin123`
+- `reader` / `reader123`
+
 Ключевые функции:
 
 - роли администратора и пользователя;
