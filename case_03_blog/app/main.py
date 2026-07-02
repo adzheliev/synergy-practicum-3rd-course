@@ -76,9 +76,22 @@ def index(
     posts = db.scalars(query.order_by(Post.created_at.desc())).unique().all()
     tags = db.scalars(select(Tag).order_by(Tag.name)).all()
     users = db.scalars(select(User).order_by(User.username)).all()
+    subscribed_author_ids = set()
+    if user:
+        subscribed_author_ids = set(
+            db.scalars(select(Subscription.author_id).where(Subscription.subscriber_id == user.id)).all()
+        )
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "current_user": user, "posts": posts, "tags": tags, "users": users, "active_tag": tag},
+        {
+            "request": request,
+            "current_user": user,
+            "posts": posts,
+            "tags": tags,
+            "users": users,
+            "active_tag": tag,
+            "subscribed_author_ids": subscribed_author_ids,
+        },
     )
 
 

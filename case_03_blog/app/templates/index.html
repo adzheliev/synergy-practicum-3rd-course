@@ -42,9 +42,9 @@
     <h2>Авторы</h2>
     <div class="authors">
       {% for user in users if user.id != current_user.id %}
-        <form method="post" action="/users/{{ user.id }}/subscribe">
+        <form method="post" action="/users/{{ user.id }}/{% if user.id in subscribed_author_ids %}unsubscribe{% else %}subscribe{% endif %}">
           <span>{{ user.username }}</span>
-          <button type="submit">Подписаться</button>
+          <button type="submit">{% if user.id in subscribed_author_ids %}Отписаться{% else %}Подписаться{% endif %}</button>
         </form>
       {% endfor %}
     </div>
@@ -104,4 +104,3 @@
   {% endfor %}
 </section>
 {% endblock %}
-
