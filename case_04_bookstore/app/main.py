@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
-from .models import User
+from .models import Book, Category, User
 from .security import hash_password, read_signed_user_id, sign_user_id, verify_password
 
 
@@ -77,7 +77,45 @@ def logout():
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(user: User | None = Depends(get_current_user)) -> str:
+def index(
+    category: str | None = None,
+    sort: str = "title",
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+) -> str:
+    query = select(Book).join(Book.category)
+    if category:
+        query = query.where(Category.name == category)
+    if sort == "author":
+        query = query.order_by(Book.author.asc(), Book.title.asc())
+    elif sort == "year":
+        query = query.order_by(Book.year.desc(), Book.title.asc())
+    else:
+        sort = "title"
+        query = query.order_by(Book.title.asc())
+    books = db.scalars(query).all()
+    categories = db.scalars(select(Category).order_by(Category.name.asc())).all()
+    category_links = "".join(
+        f'<a class="chip {"active" if category == item.name else ""}" href="/?category={item.name}&sort={sort}">{item.name}</a>'
+        for item in categories
+    )
+    book_cards = "".join(
+        f"""
+        <article class="book-card">
+          <div>
+            <p class="meta">{book.category.name} · {book.year}</p>
+            <h2>{book.title}</h2>
+            <p>{book.author}</p>
+            <p>{book.description}</p>
+          </div>
+          <div class="book-footer">
+            <strong>{book.price} ₽</strong>
+            <span>{book.status}</span>
+          </div>
+        </article>
+        """
+        for book in books
+    ) or '<article class="book-card empty">Книги не найдены.</article>'
     account_panel = (
         f"""
         <form method="post" action="/logout" class="account">
@@ -115,10 +153,34 @@ def index(user: User | None = Depends(get_current_user)) -> str:
           <section class="hero">
             <p class="eyebrow">Case 04</p>
             <h1>Web-версия книжного магазина</h1>
-            <p>Стартовая страница проекта. Следующие шаги: роли администратора и пользователя, каталог, сортировка, покупка и аренда книг.</p>
+            <p>Каталог книг с ролями пользователя и администратора, сортировкой, покупкой и арендой.</p>
             {account_panel}
+          </section>
+          <section class="toolbar">
+            <div>
+              <a class="chip {all_active}" href="/?sort={sort}">Все</a>
+              {category_links}
+            </div>
+            <div>
+              <a class="chip {title_active}" href="/?{category_query}sort=title">По названию</a>
+              <a class="chip {author_active}" href="/?{category_query}sort=author">По автору</a>
+              <a class="chip {year_active}" href="/?{category_query}sort=year">По году</a>
+            </div>
+          </section>
+          <section class="book-grid">
+            {book_cards}
           </section>
         </main>
       </body>
     </html>
-    """.format(account_panel=account_panel)
+    """.format(
+        account_panel=account_panel,
+        all_active="active" if category is None else "",
+        category_links=category_links,
+        category_query=f"category={category}&" if category else "",
+        sort=sort,
+        title_active="active" if sort == "title" else "",
+        author_active="active" if sort == "author" else "",
+        year_active="active" if sort == "year" else "",
+        book_cards=book_cards,
+    )

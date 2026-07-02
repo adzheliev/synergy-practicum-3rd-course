@@ -20,8 +20,7 @@ body {
 
 .page {
   display: grid;
-  min-height: 100vh;
-  place-items: center;
+  gap: 20px;
   padding: 32px;
 }
 
@@ -29,7 +28,6 @@ body {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  max-width: 760px;
   padding: 32px;
 }
 
@@ -87,6 +85,75 @@ button {
   cursor: pointer;
   font: inherit;
   padding: 10px 14px;
+}
+
+.toolbar {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.toolbar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-flex;
+  padding: 7px 12px;
+  text-decoration: none;
+}
+
+.chip.active {
+  background: #e5f4f2;
+  border-color: var(--accent);
+}
+
+.book-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.book-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.book-card h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.book-card p {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+
+.meta {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.book-footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.empty {
+  color: var(--muted);
 }
 
 @media (max-width: 720px) {
