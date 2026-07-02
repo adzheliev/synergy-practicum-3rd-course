@@ -196,6 +196,13 @@ button {
   grid-column: 1 / -1;
 }
 
+.admin-inline {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) auto;
+  margin-top: 12px;
+}
+
 .empty {
   color: var(--muted);
 }
@@ -203,7 +210,8 @@ button {
 @media (max-width: 720px) {
   .auth-grid,
   .account,
-  .admin-form {
+  .admin-form,
+  .admin-inline {
     grid-template-columns: 1fr;
   }
 }

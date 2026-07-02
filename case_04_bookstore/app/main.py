@@ -200,6 +200,7 @@ def index(
             <span>{book.status}</span>
           </div>
           {book_actions(book, user)}
+          {admin_book_controls(book, user)}
         </article>
         """
         for book in books
@@ -315,6 +316,44 @@ def book_actions(book: Book, user: User | None) -> str:
       </form>
     </div>
     """
+
+
+def admin_book_controls(book: Book, user: User | None) -> str:
+    if user is None or user.role != "admin":
+        return ""
+    status_options = "".join(
+        f'<option value="{status}" {"selected" if book.status == status else ""}>{status}</option>'
+        for status in ["available", "rented", "sold", "hidden"]
+    )
+    return f"""
+    <details>
+      <summary>Управление</summary>
+      <form method="post" action="/admin/books/{book.id}/update" class="admin-inline">
+        <input name="price" type="number" min="0" step="0.01" value="{book.price}" required>
+        <select name="status">{status_options}</select>
+        <button type="submit">Сохранить</button>
+      </form>
+    </details>
+    """
+
+
+@app.post("/admin/books/{book_id}/update")
+def update_book(
+    book_id: int,
+    price: float = Form(...),
+    status_value: str = Form(..., alias="status"),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+):
+    if status_value not in {"available", "rented", "sold", "hidden"}:
+        raise HTTPException(status_code=400, detail="Invalid book status")
+    book = db.get(Book, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    book.price = price
+    book.status = status_value
+    db.commit()
+    return RedirectResponse("/", status_code=303)
 
 
 @app.post("/books/{book_id}/purchase")
