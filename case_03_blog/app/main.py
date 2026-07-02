@@ -311,3 +311,17 @@ def approve_post_access(request_id: int, db: Session = Depends(get_db), user: Us
     access_request.status = "approved"
     db.commit()
     return RedirectResponse("/private", status_code=303)
+
+
+@app.post("/access-requests/{request_id}/reject")
+def reject_post_access(request_id: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    access_request = db.scalar(
+        select(PostAccessRequest)
+        .join(Post)
+        .where(PostAccessRequest.id == request_id, Post.author_id == user.id)
+    )
+    if access_request is None:
+        raise HTTPException(status_code=404, detail="Access request not found")
+    access_request.status = "rejected"
+    db.commit()
+    return RedirectResponse("/private", status_code=303)

@@ -29,9 +29,14 @@
     <article class="post">
       <h2>{{ item.post.title }}</h2>
       <p>Пользователь {{ item.requester.username }} просит доступ.</p>
-      <form method="post" action="/access-requests/{{ item.id }}/approve">
-        <button type="submit">Разрешить доступ</button>
-      </form>
+      <div class="actions">
+        <form method="post" action="/access-requests/{{ item.id }}/approve">
+          <button type="submit">Разрешить доступ</button>
+        </form>
+        <form method="post" action="/access-requests/{{ item.id }}/reject">
+          <button class="danger" type="submit">Отклонить</button>
+        </form>
+      </div>
     </article>
   {% else %}
     <article class="post empty">Новых запросов нет.</article>

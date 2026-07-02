@@ -178,7 +178,8 @@ textarea {
 }
 
 .authors form,
-.comment-form {
+.comment-form,
+.actions {
   align-items: center;
   display: flex;
   gap: 8px;
