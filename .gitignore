@@ -2,7 +2,10 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+# Local secrets — create from .env.example, never commit
 .env
+.env.*
+!.env.example
 .DS_Store
 ~$*.docx
 .pytest_cache/

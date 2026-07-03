@@ -3,12 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f0e8">
     <title>Student Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/">Student Blog</a>
+      <a class="brand" href="/">Inkwell</a>
       <nav>
         <a href="/">Публичные посты</a>
         {% if current_user %}

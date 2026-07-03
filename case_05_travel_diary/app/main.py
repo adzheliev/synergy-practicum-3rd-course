@@ -81,15 +81,25 @@ def my_trips(db: Session = Depends(get_db), user: User = Depends(require_user)) 
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#0b1324">
         <title>Мои путешествия</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
+        <header class="site-header">
+          <a class="site-brand" href="/">Wander<span>log</span></a>
+          <nav class="site-nav"><a href="/">Лента</a></nav>
+        </header>
         <main class="page">
           <section class="hero">
-            <p class="eyebrow">Мои путешествия</p>
-            <h1>{user.username}</h1>
-            <p><a href="/">Вернуться к публичным путешествиям</a></p>
+            <div class="hero-bg"></div>
+            <div class="hero-inner">
+              <p class="eyebrow">Личный архив</p>
+              <h1>{user.username}</h1>
+              <p><a href="/">Вернуться к публичным путешествиям</a></p>
+            </div>
           </section>
           <section class="trip-grid">
             {trip_cards}
@@ -164,16 +174,26 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Travel Diary</title>
+        <meta name="theme-color" content="#0b1324">
+        <title>Travel Diary — Wanderlog</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
+        <header class="site-header">
+          <a class="site-brand" href="/">Wander<span>log</span></a>
+          <nav class="site-nav"><a href="/">Лента</a>{nav_trips}</nav>
+        </header>
         <main class="page">
           <section class="hero">
-            <p class="eyebrow">Case 05</p>
-            <h1>Дневник путешествий</h1>
-            <p>Записи путешествий с геопозицией, изображениями, стоимостью, местами для посещения и оценками.</p>
-            {account_panel}
+            <div class="hero-bg"></div>
+            <div class="hero-inner">
+              <p class="eyebrow">Картографический дневник</p>
+              <h1>Дневник путешествий</h1>
+              <p>Записи с геопозицией, фотографиями, маршрутами, бюджетом и оценками — ваш личный атлас впечатлений.</p>
+              {account_panel}
+            </div>
           </section>
           {create_panel}
           <section class="trip-grid">
@@ -182,7 +202,7 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
         </main>
       </body>
     </html>
-    """.format(account_panel=account_panel, create_panel=create_panel, trip_cards=trip_cards)
+    """.format(account_panel=account_panel, create_panel=create_panel, trip_cards=trip_cards, nav_trips=' <a href="/my-trips">Мои путешествия</a>' if user else "")
 
 
 def render_trip_card(trip: Trip) -> str:

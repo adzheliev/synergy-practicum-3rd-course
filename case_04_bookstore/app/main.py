@@ -107,15 +107,24 @@ def my_library(db: Session = Depends(get_db), user: User = Depends(require_user)
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#1c1410">
         <title>Моя библиотека</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
+        <header class="site-header">
+          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <nav class="site-nav"><a href="/">Каталог</a></nav>
+        </header>
         <main class="page">
           <section class="hero">
-            <p class="eyebrow">Моя библиотека</p>
-            <h1>{user.username}</h1>
-            <p><a href="/">Вернуться в каталог</a></p>
+            <div class="hero-inner">
+              <p class="eyebrow">Моя библиотека</p>
+              <h1>{user.username}</h1>
+              <p><a href="/">Вернуться в каталог</a></p>
+            </div>
           </section>
           <section class="book-card">
             <h2>Покупки</h2>
@@ -254,16 +263,25 @@ def index(
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Bookstore</title>
+        <meta name="theme-color" content="#1c1410">
+        <title>Bookstore — Librarium</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
+        <header class="site-header">
+          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <nav class="site-nav"><a href="/">Каталог</a>{nav_library}</nav>
+        </header>
         <main class="page">
           <section class="hero">
-            <p class="eyebrow">Case 04</p>
-            <h1>Web-версия книжного магазина</h1>
-            <p>Каталог книг с ролями пользователя и администратора, сортировкой, покупкой и арендой.</p>
-            {account_panel}
+            <div class="hero-inner">
+              <p class="eyebrow">Антикварная коллекция</p>
+              <h1>Книжный магазин</h1>
+              <p>Каталог с покупкой и арендой, фильтрами по категориям и ролями пользователя и администратора.</p>
+              {account_panel}
+            </div>
           </section>
           <section class="toolbar">
             <div>
@@ -285,6 +303,7 @@ def index(
     </html>
     """.format(
         account_panel=account_panel,
+        nav_library=' <a href="/my-library">Моя библиотека</a>' if user else "",
         all_active="active" if category is None else "",
         category_links=category_links,
         category_query=f"category={category}&" if category else "",
@@ -377,16 +396,25 @@ def rental_reminders(db: Session = Depends(get_db), user: User = Depends(require
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#1c1410">
         <title>Напоминания об аренде</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
+        <header class="site-header">
+          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <nav class="site-nav"><a href="/">Каталог</a></nav>
+        </header>
         <main class="page">
           <section class="hero">
-            <p class="eyebrow">Администратор</p>
-            <h1>Напоминания об окончании аренды</h1>
-            <p>Показаны активные аренды, которые заканчиваются до {soon} включительно.</p>
-            <p><a href="/">Вернуться в каталог</a></p>
+            <div class="hero-inner">
+              <p class="eyebrow">Администратор</p>
+              <h1>Напоминания об окончании аренды</h1>
+              <p>Показаны активные аренды, которые заканчиваются до {soon} включительно.</p>
+              <p><a href="/">Вернуться в каталог</a></p>
+            </div>
           </section>
           <section class="book-card">
             <ul>{reminder_rows}</ul>
