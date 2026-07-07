@@ -74,37 +74,34 @@ def my_trips(db: Session = Depends(get_db), user: User = Depends(require_user)) 
     trips = db.scalars(
         select(Trip).where(Trip.author_id == user.id).order_by(Trip.created_at.desc())
     ).all()
-    trip_cards = "".join(render_trip_card(trip) for trip in trips) or '<article class="trip-card empty">Вы пока не добавили путешествий.</article>'
+    trip_cards = "".join(render_trip_card(trip) for trip in trips) or '<article class="field-note empty">Вы пока не добавили путешествий.</article>'
     return f"""
     <!doctype html>
     <html lang="ru">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#0b1324">
-        <title>Мои путешествия</title>
+        <title>Pintrail — Мои путешествия</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
         <header class="site-header">
-          <a class="site-brand" href="/">Wander<span>log</span></a>
+          <a class="site-brand" href="/">Pintrail</a>
           <nav class="site-nav"><a href="/">Лента</a></nav>
         </header>
         <main class="page">
           <section class="hero">
-            <div class="hero-bg"></div>
-            <div class="hero-inner">
-              <p class="eyebrow">Личный архив</p>
-              <h1>{user.username}</h1>
-              <p><a href="/">Вернуться к публичным путешествиям</a></p>
-            </div>
+            <p class="kicker">Личная доска</p>
+            <h1>{user.username}</h1>
+            <p><a href="/">Вернуться к публичным путешествиям</a></p>
           </section>
-          <section class="trip-grid">
+          <section class="pin-board">
             {trip_cards}
           </section>
         </main>
+        <script src="/static/js/app.js"></script>
       </body>
     </html>
     """
@@ -115,7 +112,7 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
     trips = db.scalars(
         select(Trip).where(Trip.is_public.is_(True)).order_by(Trip.created_at.desc())
     ).all()
-    trip_cards = "".join(render_trip_card(trip) for trip in trips) or '<article class="trip-card empty">Пока нет публичных путешествий.</article>'
+    trip_cards = "".join(render_trip_card(trip) for trip in trips) or '<article class="field-note empty">Пока нет публичных путешествий.</article>'
     account_panel = (
         f"""
         <form method="post" action="/logout" class="account">
@@ -142,7 +139,7 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
     )
     create_panel = (
         """
-        <section class="trip-card">
+        <section class="note-form">
           <h2>Новая запись</h2>
           <form method="post" action="/trips" class="trip-form">
             <input name="title" placeholder="Название путешествия" required>
@@ -174,32 +171,29 @@ def index(db: Session = Depends(get_db), user: User | None = Depends(get_current
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#0b1324">
-        <title>Travel Diary — Wanderlog</title>
+        <title>Pintrail — Travel Diary</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
         <header class="site-header">
-          <a class="site-brand" href="/">Wander<span>log</span></a>
+          <a class="site-brand" href="/">Pintrail</a>
           <nav class="site-nav"><a href="/">Лента</a>{nav_trips}</nav>
         </header>
         <main class="page">
           <section class="hero">
-            <div class="hero-bg"></div>
-            <div class="hero-inner">
-              <p class="eyebrow">Картографический дневник</p>
-              <h1>Дневник путешествий</h1>
-              <p>Записи с геопозицией, фотографиями, маршрутами, бюджетом и оценками — ваш личный атлас впечатлений.</p>
-              {account_panel}
-            </div>
+            <p class="kicker">Полевые заметки</p>
+            <h1>Дневник маршрутов</h1>
+            <p>Записи с геопозицией, фото, бюджетом и оценками — как доска с приколотыми заметками о поездках.</p>
+            {account_panel}
           </section>
           {create_panel}
-          <section class="trip-grid">
+          <section class="pin-board">
             {trip_cards}
           </section>
         </main>
+        <script src="/static/js/app.js"></script>
       </body>
     </html>
     """.format(account_panel=account_panel, create_panel=create_panel, trip_cards=trip_cards, nav_trips=' <a href="/my-trips">Мои путешествия</a>' if user else "")
@@ -219,10 +213,11 @@ def render_trip_card(trip: Trip) -> str:
     )
     geo = f"{trip.latitude}, {trip.longitude}" if trip.latitude is not None and trip.longitude is not None else "не указана"
     cost = f"{trip.cost} ₽" if trip.cost is not None else "не указана"
+    photo_html = f'<div class="photo-frame">{image_html}</div>' if image else ""
     return f"""
-    <article class="trip-card">
-      {image_html}
-      <p class="meta">{trip.location}</p>
+    <article class="field-note">
+      {photo_html}
+      <p class="stamp">{trip.location}</p>
       <h2>{trip.title}</h2>
       <p>{trip.body}</p>
       <p>Геопозиция: {geo}</p>

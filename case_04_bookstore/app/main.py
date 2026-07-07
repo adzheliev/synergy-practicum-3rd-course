@@ -107,24 +107,21 @@ def my_library(db: Session = Depends(get_db), user: User = Depends(require_user)
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#1c1410">
-        <title>Моя библиотека</title>
+        <title>Stacklist — Моя библиотека</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
         <header class="site-header">
-          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <a class="site-brand" href="/">Stacklist</a>
           <nav class="site-nav"><a href="/">Каталог</a></nav>
         </header>
         <main class="page">
           <section class="hero">
-            <div class="hero-inner">
-              <p class="eyebrow">Моя библиотека</p>
-              <h1>{user.username}</h1>
-              <p><a href="/">Вернуться в каталог</a></p>
-            </div>
+            <p class="lede">Личный реестр</p>
+            <h1>{user.username}</h1>
+            <p><a href="/">Вернуться в каталог</a></p>
           </section>
           <section class="book-card">
             <h2>Покупки</h2>
@@ -197,23 +194,22 @@ def index(
     )
     book_cards = "".join(
         f"""
-        <article class="book-card">
-          <div>
-            <p class="meta">{book.category.name} · {book.year}</p>
+        <article class="book-row">
+          <p class="meta">{book.category.name} · {book.year}</p>
+          <div class="book-row-head">
             <h2>{book.title}</h2>
-            <p>{book.author}</p>
-            <p>{book.description}</p>
+            <span class="price-tag">{book.price} ₽</span>
           </div>
-          <div class="book-footer">
-            <strong>{book.price} ₽</strong>
-            <span>{book.status}</span>
+          <p>{book.author}</p>
+          <p>{book.description}</p>
+          <div class="book-row-foot">
+            <span class="status-pill">{book.status}</span>
+            <div>{book_actions(book, user)}{admin_book_controls(book, user)}</div>
           </div>
-          {book_actions(book, user)}
-          {admin_book_controls(book, user)}
         </article>
         """
         for book in books
-    ) or '<article class="book-card empty">Книги не найдены.</article>'
+    ) or '<article class="book-row empty">Книги не найдены.</article>'
     account_panel = (
         f"""
         <form method="post" action="/logout" class="account">
@@ -240,7 +236,7 @@ def index(
     )
     admin_panel = (
         """
-        <section class="book-card">
+        <section class="admin-panel">
           <h2>Добавить книгу</h2>
           <p><a href="/admin/rental-reminders">Напоминания об аренде</a></p>
           <form method="post" action="/admin/books" class="admin-form">
@@ -263,25 +259,22 @@ def index(
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#1c1410">
-        <title>Bookstore — Librarium</title>
+        <title>Stacklist — Bookstore</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
         <header class="site-header">
-          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <a class="site-brand" href="/">Stacklist</a>
           <nav class="site-nav"><a href="/">Каталог</a>{nav_library}</nav>
         </header>
         <main class="page">
           <section class="hero">
-            <div class="hero-inner">
-              <p class="eyebrow">Антикварная коллекция</p>
-              <h1>Книжный магазин</h1>
-              <p>Каталог с покупкой и арендой, фильтрами по категориям и ролями пользователя и администратора.</p>
-              {account_panel}
-            </div>
+            <p class="lede">Книжный реестр</p>
+            <h1>Каталог для чтения и аренды</h1>
+            <p>Горизонтальный реестр изданий: покупка, аренда, фильтры и роли пользователя и администратора.</p>
+            {account_panel}
           </section>
           <section class="toolbar">
             <div>
@@ -294,11 +287,12 @@ def index(
               <a class="chip {year_active}" href="/?{category_query}sort=year">По году</a>
             </div>
           </section>
-          <section class="book-grid">
+          <section class="catalog">
             {book_cards}
           </section>
           {admin_panel}
         </main>
+        <script src="/static/js/app.js"></script>
       </body>
     </html>
     """.format(
@@ -396,25 +390,22 @@ def rental_reminders(db: Session = Depends(get_db), user: User = Depends(require
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#1c1410">
-        <title>Напоминания об аренде</title>
+        <title>Stacklist — Напоминания</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="/static/css/style.css">
       </head>
       <body>
         <header class="site-header">
-          <a class="site-brand" href="/">Libra<span>rium</span></a>
+          <a class="site-brand" href="/">Stacklist</a>
           <nav class="site-nav"><a href="/">Каталог</a></nav>
         </header>
         <main class="page">
           <section class="hero">
-            <div class="hero-inner">
-              <p class="eyebrow">Администратор</p>
-              <h1>Напоминания об окончании аренды</h1>
-              <p>Показаны активные аренды, которые заканчиваются до {soon} включительно.</p>
-              <p><a href="/">Вернуться в каталог</a></p>
-            </div>
+            <p class="lede">Администратор</p>
+            <h1>Напоминания об окончании аренды</h1>
+            <p>Показаны активные аренды, которые заканчиваются до {soon} включительно.</p>
+            <p><a href="/">Вернуться в каталог</a></p>
           </section>
           <section class="book-card">
             <ul>{reminder_rows}</ul>
